@@ -1,6 +1,6 @@
 {
   "name": "typetube",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "High-performance unthrottled YouTube media stream extraction and download client with Protocol Buffers support",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,7 +18,6 @@
   "files": [
     "dist",
     "README.md",
-    "DOCUMENTATION.md",
     "LICENSE"
   ],
   "repository": {
@@ -50,6 +49,7 @@
   "author": "TypeTube",
   "license": "MIT",
   "devDependencies": {
-    "typescript": "^5.5.0"
+    "@types/node": "^26.6.4",
+    "typescript": "^5.9.3"
   }
 }
