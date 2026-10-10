@@ -1,13 +1,7 @@
 node_modules/
-dist/
 *.mjs
 benchmark*
 test*
 final-*
 final-test-output/
 *.tgz
-keys.db
-tap-identity.key
-.cache/
-downloads/
-pt/

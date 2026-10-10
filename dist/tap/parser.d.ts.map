@@ -1,0 +1,1 @@
+{"version":3,"file":"parser.d.ts","sourceRoot":"","sources":["../../src/tap/parser.ts"],"names":[],"mappings":"AAAA,OAAO,EAAgC,QAAQ,EAAoB,MAAM,eAAe,CAAC;AAEzF,qBAAa,YAAY;IACrB,OAAO,CAAC,MAAM,CAAS;IACvB,OAAO,CAAC,MAAM,CAAK;IACnB,OAAO,CAAC,MAAM,CAAK;gBACP,eAAe,SAAY;IAGhC,IAAI,CAAC,KAAK,EAAE,MAAM,GAAG,IAAI;IAiBhC,OAAO,CAAC,cAAc;IAUf,SAAS,IAAI,QAAQ,GAAG,IAAI;CAyBtC"}

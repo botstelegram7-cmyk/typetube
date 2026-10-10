@@ -549,7 +549,7 @@ export class TypeTube {
     }> {
         const family = this.getIpFamily(url);
         try {
-            const probeTotal = await new Promise<number | null>((resolve) => {
+            const probeTotal = await new Promise<number | null>((resolve, reject) => {
                 const parsed = new URL(url);
                 const transport = parsed.protocol === "http:" ? http : https;
                 const req = transport.request(url, {
@@ -561,6 +561,12 @@ export class TypeTube {
                     }
                 }, (res) => {
                     res.resume();
+                    if (res.statusCode === 403) {
+                        return reject(new TypeTubeError(
+                            "Stream download forbidden (HTTP 403). This track may be restricted to the cluster's region, blocking foreign requests. Try connecting to a different cluster (e.g. tap://nl.clusters.typetube.xyz or tap://sg.clusters.typetube.xyz).",
+                            403
+                        ));
+                    }
                     const cr = res.headers["content-range"];
                     if (res.statusCode === 206 && cr) {
                         const total = parseInt(String(cr).split("/")[1] || "0", 10);
@@ -576,7 +582,11 @@ export class TypeTube {
                 return await this.downloadChunkedRange(url, destPath, probeTotal, onProgress, chunkSizeBytes, workersCount);
             }
         }
-        catch { }
+        catch (err) {
+            if (err instanceof TypeTubeError && err.statusCode === 403) {
+                throw err;
+            }
+        }
         return this.downloadLinearStream(url, destPath, onProgress, maxRedirects);
     }
     private async downloadChunkedRange(url: string, destPath: string, totalBytes: number, onProgress?: (p: {
@@ -613,6 +623,13 @@ export class TypeTube {
                         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
                     }
                 }, (res) => {
+                    if (res.statusCode === 403) {
+                        res.resume();
+                        return reject(new TypeTubeError(
+                            "Stream download forbidden (HTTP 403). This track may be restricted to the cluster's region, blocking foreign requests. Try connecting to a different cluster (e.g. tap://nl.clusters.typetube.xyz or tap://sg.clusters.typetube.xyz).",
+                            403
+                        ));
+                    }
                     if (res.statusCode !== 200 && res.statusCode !== 206) {
                         res.resume();
                         return reject(new TypeTubeError(`Range chunk download failed with status ${res.statusCode}`, res.statusCode));
@@ -687,6 +704,14 @@ export class TypeTube {
                         }
                         const nextUrl = new URL(res.headers.location, currentUrl).toString();
                         return fetchUrl(nextUrl, redirectsLeft - 1);
+                    }
+                    if (res.statusCode === 403) {
+                        file.close();
+                        fs.unlink(destPath, () => { });
+                        return reject(new TypeTubeError(
+                            "Stream download forbidden (HTTP 403). This track may be restricted to the cluster's region, blocking foreign requests. Try connecting to a different cluster (e.g. tap://nl.clusters.typetube.xyz or tap://sg.clusters.typetube.xyz).",
+                            403
+                        ));
                     }
                     if (res.statusCode !== 200 && res.statusCode !== 206) {
                         file.close();
