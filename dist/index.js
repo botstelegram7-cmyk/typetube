@@ -552,7 +552,7 @@ export class TypeTube {
                 }, (res) => {
                     res.resume();
                     if (res.statusCode === 403) {
-                        return reject(new TypeTubeError("Stream download forbidden (HTTP 403). This track may be restricted to the cluster's region, blocking foreign requests. Try connecting to a different cluster (e.g. tap://nl.clusters.typetube.xyz or tap://sg.clusters.typetube.xyz).", 403));
+                        return reject(new TypeTubeError("Stream download forbidden (HTTP 403): track restricted to the cluster's region", 403));
                     }
                     const cr = res.headers["content-range"];
                     if (res.statusCode === 206 && cr) {
@@ -603,7 +603,7 @@ export class TypeTube {
                 }, (res) => {
                     if (res.statusCode === 403) {
                         res.resume();
-                        return reject(new TypeTubeError("Stream download forbidden (HTTP 403). This track may be restricted to the cluster's region, blocking foreign requests. Try connecting to a different cluster (e.g. tap://nl.clusters.typetube.xyz or tap://sg.clusters.typetube.xyz).", 403));
+                        return reject(new TypeTubeError("Stream download forbidden (HTTP 403): track restricted to the cluster's region", 403));
                     }
                     if (res.statusCode !== 200 && res.statusCode !== 206) {
                         res.resume();
@@ -676,7 +676,7 @@ export class TypeTube {
                     if (res.statusCode === 403) {
                         file.close();
                         fs.unlink(destPath, () => { });
-                        return reject(new TypeTubeError("Stream download forbidden (HTTP 403). This track may be restricted to the cluster's region, blocking foreign requests. Try connecting to a different cluster (e.g. tap://nl.clusters.typetube.xyz or tap://sg.clusters.typetube.xyz).", 403));
+                        return reject(new TypeTubeError("Stream download forbidden (HTTP 403): track restricted to the cluster's region", 403));
                     }
                     if (res.statusCode !== 200 && res.statusCode !== 206) {
                         file.close();

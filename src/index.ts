@@ -563,7 +563,7 @@ export class TypeTube {
                     res.resume();
                     if (res.statusCode === 403) {
                         return reject(new TypeTubeError(
-                            "Stream download forbidden (HTTP 403). This track may be restricted to the cluster's region, blocking foreign requests. Try connecting to a different cluster (e.g. tap://nl.clusters.typetube.xyz or tap://sg.clusters.typetube.xyz).",
+                            "Stream download forbidden (HTTP 403): track restricted to the cluster's region",
                             403
                         ));
                     }
@@ -626,7 +626,7 @@ export class TypeTube {
                     if (res.statusCode === 403) {
                         res.resume();
                         return reject(new TypeTubeError(
-                            "Stream download forbidden (HTTP 403). This track may be restricted to the cluster's region, blocking foreign requests. Try connecting to a different cluster (e.g. tap://nl.clusters.typetube.xyz or tap://sg.clusters.typetube.xyz).",
+                            "Stream download forbidden (HTTP 403): track restricted to the cluster's region",
                             403
                         ));
                     }
@@ -709,7 +709,7 @@ export class TypeTube {
                         file.close();
                         fs.unlink(destPath, () => { });
                         return reject(new TypeTubeError(
-                            "Stream download forbidden (HTTP 403). This track may be restricted to the cluster's region, blocking foreign requests. Try connecting to a different cluster (e.g. tap://nl.clusters.typetube.xyz or tap://sg.clusters.typetube.xyz).",
+                            "Stream download forbidden (HTTP 403): track restricted to the cluster's region",
                             403
                         ));
                     }
