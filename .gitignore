@@ -5,3 +5,12 @@ test*
 final-*
 final-test-output/
 *.tgz
+
+# Python Telegram bot
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+downloads/
+*.log
