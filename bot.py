@@ -5,6 +5,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import shlex
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -21,10 +22,9 @@ log = logging.getLogger("typetube_bot")
 BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
 TYPETUBE_API_KEY = os.getenv("TYPETUBE_API_KEY", "").strip()
 MAX_FILE_MB = int(os.getenv("MAX_FILE_MB", "48"))
-DOWNLOAD_DIR = Path(os.getenv("DOWNLOAD_DIR", "downloads"))
 DEFAULT_QUALITY = os.getenv("DEFAULT_QUALITY", "720p")
 ALLOWED_QUALITIES = {"360p", "480p", "720p", "1080p", "1440p", "2160p", "highest"}
-TYPETUBE_COMMAND = os.getenv("TYPETUBE_COMMAND", "npx --yes typetube").split()
+TYPETUBE_COMMAND = shlex.split(os.getenv("TYPETUBE_COMMAND", "npx --yes typetube"))
 
 YOUTUBE_URL = re.compile(
     r"^(https?://)?(www\\.)?(youtube\\.com/watch\\?v=[\\w-]+|youtu\\.be/[\\w-]+|youtube\\.com/shorts/[\\w-]+)(?:[&?][^\\s]*)?$",
@@ -93,19 +93,15 @@ async def set_quality(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    task = context.user_data.get("download_task")
-    if task and not task.done():
-        task.cancel()
-        await update.message.reply_text("Cancellation requested.")
-    else:
-        await update.message.reply_text("There is no active download.")
+    await update.message.reply_text("Downloads currently run as one operation and cannot be cancelled mid-transfer. Please wait for it to finish.")
 
 
 async def run_download(url: str, quality: str, workdir: Path) -> Path:
     workdir.mkdir(parents=True, exist_ok=True)
+    # TypeTube CLI uses the URL/query positionally (there is no "download" subcommand).
     command = [
-        *TYPETUBE_COMMAND, "download", url, str(workdir),
-        "--video", "--media", "--format", quality, "--workers", "4",
+        *TYPETUBE_COMMAND, url, "--video", "--format", quality,
+        "--ext", "mp4", "--output", str(workdir), "--workers", "4",
     ]
     # TypeTube documents CLI arguments; don't pass a user's raw text to a shell.
     proc = await asyncio.create_subprocess_exec(
@@ -146,16 +142,12 @@ async def handle_url(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
     if not valid_youtube_url(url):
         await message.reply_text("Please send a valid YouTube video, Shorts, or youtu.be link.")
         return
-    if context.user_data.get("download_task") and not context.user_data["download_task"].done():
-        await message.reply_text("You already have a download running. Use /cancel first.")
-        return
     status = await message.reply_text("🔎 Checking the video and preparing download…")
     quality = context.user_data.get("quality", DEFAULT_QUALITY)
     try:
         async with asyncio.timeout(920):
             with tempfile.TemporaryDirectory(prefix="typetube-") as tmp:
                 workdir = Path(tmp)
-                await context.bot.send_chat_action(message.chat_id, ChatAction.UPLOAD_VIDEO)
                 media = await run_download(url, quality, workdir)
                 size = media.stat().st_size
                 if size > MAX_FILE_MB * 1024 * 1024:
@@ -165,6 +157,7 @@ async def handle_url(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
                     )
                     return
                 await status.edit_text(f"⬆️ Uploading {media.name} ({size / (1024 * 1024):.1f} MiB)…")
+                await context.bot.send_chat_action(message.chat_id, ChatAction.UPLOAD_VIDEO)
                 with media.open("rb") as handle:
                     if media.suffix.lower() == ".mp4":
                         await message.reply_video(video=handle, caption=f"🎬 {media.stem}", read_timeout=180, write_timeout=180)
