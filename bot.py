@@ -115,6 +115,10 @@ async def run_download(url: str, quality: str, workdir: Path) -> Path:
         proc.kill()
         await proc.wait()
         raise RuntimeError("Download timed out after 15 minutes.") from None
+    except asyncio.CancelledError:
+        proc.kill()
+        await proc.wait()
+        raise
     if proc.returncode != 0:
         detail = output.decode("utf-8", errors="replace")[-1200:].strip()
         log.warning("TypeTube CLI failed (exit %s): %s", proc.returncode, detail)
