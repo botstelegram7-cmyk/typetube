@@ -3,14 +3,12 @@ import logging
 import os
 import re
 import shutil
-import subprocess
 import tempfile
 import shlex
 from pathlib import Path
 from urllib.parse import urlparse
 
 from telegram import Update
-from telegram.constants import ChatAction
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
 logging.basicConfig(
@@ -179,6 +177,8 @@ async def handle_url(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 def main() -> None:
     if not BOT_TOKEN:
         raise SystemExit("BOT_TOKEN is missing. Add it to your environment.")
+    if not TYPETUBE_COMMAND:
+        raise SystemExit("TYPETUBE_COMMAND cannot be empty.")
     if shutil.which(TYPETUBE_COMMAND[0]) is None:
         raise SystemExit(f"Cannot find command: {TYPETUBE_COMMAND[0]}. Install Node.js/npm first.")
     app = Application.builder().token(BOT_TOKEN).build()
