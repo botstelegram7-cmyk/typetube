@@ -27,7 +27,7 @@ ALLOWED_QUALITIES = {"360p", "480p", "720p", "1080p", "1440p", "2160p", "highest
 TYPETUBE_COMMAND = shlex.split(os.getenv("TYPETUBE_COMMAND", "npx --yes typetube"))
 
 YOUTUBE_URL = re.compile(
-    r"^(https?://)?(www\\.)?(youtube\\.com/watch\\?v=[\\w-]+|youtu\\.be/[\\w-]+|youtube\\.com/shorts/[\\w-]+)(?:[&?][^\\s]*)?$",
+    r"^(https?://)?(www\.)?(youtube\.com/watch\?v=[\w-]+|youtu\.be/[\w-]+|youtube\.com/shorts/[\w-]+)(?:[&?][^\s]*)?$",
     re.IGNORECASE,
 )
 
@@ -45,7 +45,7 @@ def valid_youtube_url(text: str) -> bool:
         return False
     host = (parsed.hostname or "").lower()
     return host in {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be", "www.youtu.be"} and bool(
-        re.search(r"(?:watch\\?v=|youtu\\.be/|/shorts/)[\\w-]{6,}", candidate, re.I)
+        re.search(r"(?:watch\?v=|youtu\.be/|/shorts/)[\w-]{6,}", candidate, re.I)
     )
 
 
